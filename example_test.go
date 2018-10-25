@@ -9,7 +9,7 @@ package errors_test
 import (
 	"fmt"
 
-	"github.com/gilcrest/go-API-template/lib/errors"
+	"github.com/gilcrest/errors"
 )
 
 func ExampleError() {
