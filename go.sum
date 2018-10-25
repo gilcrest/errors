@@ -1,0 +1,3 @@
+github.com/gilcrest/go-API-template v0.0.2 h1:Wp0BmcNDg6MhSJn/CW2tCwqg/zq2MEipn6f9durgVlk=
+github.com/rs/zerolog v1.9.1 h1:AjV/SFRF0+gEa6rSjkh0Eji/DnkrJKVpPho6SW5g4mU=
+github.com/rs/zerolog v1.9.1/go.mod h1:YbFCdg8HfsridGWAh22vktObvhZbQsZXe4/zB0OKkWU=
