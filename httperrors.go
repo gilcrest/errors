@@ -7,9 +7,9 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-// HError represents a handler error. It provides methods for a HTTP status
+// hError represents an HTTP handler error. It provides methods for a HTTP status
 // code and embeds the built-in error interface.
-type HError interface {
+type hError interface {
 	error
 	Status() int
 	ErrKind() string
@@ -66,7 +66,7 @@ func HTTPError(w http.ResponseWriter, err error) {
 		switch e := err.(type) {
 		// If the interface value is of type Error (not a typical error, but
 		// the Error interface defined above), then
-		case HError:
+		case hError:
 			// We can retrieve the status here and write out a specific
 			// HTTP status code.
 			log.Printf("HTTP %d - %s", e.Status(), e)
