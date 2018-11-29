@@ -2,6 +2,7 @@ package errors
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/rs/zerolog/log"
@@ -81,7 +82,7 @@ func HTTPError(w http.ResponseWriter, err error) {
 			// Marshal errResponse struct to JSON for the response body
 			errJSON, _ := json.MarshalIndent(er, "", "    ")
 
-			http.Error(w, string(errJSON), e.Status())
+			sendError(w, string(errJSON), e.Status())
 
 		default:
 			// Any error types we don't specifically look out for default
@@ -99,7 +100,19 @@ func HTTPError(w http.ResponseWriter, err error) {
 			// Marshal errResponse struct to JSON for the response body
 			errJSON, _ := json.MarshalIndent(er, "", "    ")
 
-			http.Error(w, string(errJSON), cd)
+			sendError(w, string(errJSON), cd)
 		}
 	}
+}
+
+// Taken from standard library, but changed to send application/json as header
+// Error replies to the request with the specified error message and HTTP code.
+// It does not otherwise end the request; the caller should ensure no further
+// writes are done to w.
+// The error message should be json.
+func sendError(w http.ResponseWriter, error string, code int) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("X-Content-Type-Options", "nosniff")
+	w.WriteHeader(code)
+	fmt.Fprintln(w, error)
 }
