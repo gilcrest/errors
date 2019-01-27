@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"runtime"
 
 	"github.com/rs/zerolog/log"
 )
@@ -125,4 +126,42 @@ func sendError(w http.ResponseWriter, error string, statusCode int) {
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 	w.WriteHeader(statusCode)
 	fmt.Fprintln(w, error)
+}
+
+// RE builds an HTTP Response error value from its arguments.
+// There must be at least one argument or RE panics.
+// The type of each argument determines its meaning.
+// If more than one argument of a given type is presented,
+// only the last one is recorded.
+//
+// The types are:
+func RE(args ...interface{}) error {
+	if len(args) == 0 {
+		panic("call to errors.RE with no arguments")
+	}
+	e := &HTTPErr{}
+	for _, arg := range args {
+		switch arg := arg.(type) {
+		case int:
+			e.HTTPStatusCode = arg
+		case Kind:
+			e.Kind = arg
+		case string:
+			e.Code = Code(arg)
+		case Code:
+			e.Code = arg
+		case *Error:
+			// Make a copy
+			copy := *arg
+			e.Err = &copy
+		case error:
+			e.Err = arg
+		default:
+			_, file, line, _ := runtime.Caller(1)
+			log.Error().Msgf("errors.E: bad call from %s:%d: %v", file, line, args)
+			return Errorf("unknown type %T, value %v in error call", arg, arg)
+		}
+	}
+
+	return e
 }
