@@ -14,13 +14,15 @@ type hError interface {
 	error
 	Status() int
 	ErrKind() string
+	ErrCode() string
 }
 
 // HTTPErr represents an error with an associated HTTP status code.
 type HTTPErr struct {
-	Code int
-	Kind Kind
-	Err  error
+	HTTPStatusCode int
+	Kind           Kind
+	Code           Code
+	Err            error
 }
 
 // Allows HTTPErr to satisfy the error interface.
@@ -38,9 +40,14 @@ func (hse HTTPErr) ErrKind() string {
 	return hse.Kind.String()
 }
 
-// Status Returns an HTTP status code.
+// ErrCode returns a string denoting the "kind" of error
+func (hse HTTPErr) ErrCode() string {
+	return string(hse.Code)
+}
+
+// Status Returns an HTTP Status Code.
 func (hse HTTPErr) Status() int {
-	return hse.Code
+	return hse.HTTPStatusCode
 }
 
 type errResponse struct {
@@ -49,15 +56,16 @@ type errResponse struct {
 
 type svcError struct {
 	Kind    string `json:"kind"`
+	Code    string `json:"code"`
 	Message string `json:"message"`
 }
 
 // HTTPError takes a writer and an error, performs a type switch to
 // determine if the type is an HTTPError (which meets the Error interface
 // as defined in this package), then sends the Error as a response to the
-// client. If the type is not meet the Error interface as defined in this
+// client. If the type does not meet the Error interface as defined in this
 // package, then a proper error is still formed and sent to the client,
-// however, the Kind will be Unanticipated.
+// however, the Kind and Code will be Unanticipated.
 func HTTPError(w http.ResponseWriter, err error) {
 	const op Op = "errors.httpError"
 
@@ -75,6 +83,7 @@ func HTTPError(w http.ResponseWriter, err error) {
 			er := errResponse{
 				Error: svcError{
 					Kind:    e.ErrKind(),
+					Code:    e.ErrCode(),
 					Message: e.Error(),
 				},
 			}
@@ -91,6 +100,7 @@ func HTTPError(w http.ResponseWriter, err error) {
 			er := errResponse{
 				Error: svcError{
 					Kind:    Unanticipated.String(),
+					Code:    "Unanticipated",
 					Message: "Unexpected error - contact support",
 				},
 			}
@@ -110,9 +120,9 @@ func HTTPError(w http.ResponseWriter, err error) {
 // It does not otherwise end the request; the caller should ensure no further
 // writes are done to w.
 // The error message should be json.
-func sendError(w http.ResponseWriter, error string, code int) {
+func sendError(w http.ResponseWriter, error string, statusCode int) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("X-Content-Type-Options", "nosniff")
-	w.WriteHeader(code)
+	w.WriteHeader(statusCode)
 	fmt.Fprintln(w, error)
 }
