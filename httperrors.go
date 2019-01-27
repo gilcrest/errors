@@ -56,9 +56,9 @@ type errResponse struct {
 }
 
 type svcError struct {
-	Kind    string `json:"kind"`
-	Code    string `json:"code"`
-	Message string `json:"message"`
+	Kind    string `json:"kind,omitempty"`
+	Code    string `json:"code,omitempty"`
+	Message string `json:"message,omitempty"`
 }
 
 // HTTPError takes a writer and an error, performs a type switch to
