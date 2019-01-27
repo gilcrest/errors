@@ -33,6 +33,8 @@ type Error struct {
 	// Kind is the class of error, such as permission failure,
 	// or "Other" if its class is unknown or irrelevant.
 	Kind Kind
+	// Code is a human-readable, short representation of the error
+	Code Code
 	// The underlying error that triggered this one, if any.
 	Err error
 	// Stack information; used only when the 'debug' build tag is set.
@@ -69,6 +71,9 @@ var Separator = ":\n\t"
 // such as FUSE that must act differently depending on the error.
 type Kind uint8
 
+// Code is a human-readable, short representation of the error
+type Code string
+
 // Kinds of errors.
 //
 // The values of the error kinds are common between both
@@ -82,13 +87,8 @@ const (
 	IO                        // External I/O error such as network failure.
 	Exist                     // Item already exists.
 	NotExist                  // Item does not exist.
-	IsDir                     // Item is a directory.
-	NotDir                    // Item is not a directory.
-	NotEmpty                  // Directory not empty.
 	Private                   // Information withheld.
 	Internal                  // Internal error or inconsistency.
-	CannotDecrypt             // No wrapped key for user with read access.
-	Transient                 // A transient error.
 	BrokenLink                // Link target does not exist.
 	Database                  // Error from database.
 	Validation                // Input validation error.
@@ -111,20 +111,10 @@ func (k Kind) String() string {
 		return "item does not exist"
 	case BrokenLink:
 		return "link target does not exist"
-	case IsDir:
-		return "item is a directory"
-	case NotDir:
-		return "item is not a directory"
-	case NotEmpty:
-		return "directory not empty"
 	case Private:
 		return "information withheld"
 	case Internal:
 		return "internal error"
-	case CannotDecrypt:
-		return `no wrapped key for user; owner must "upspin share -fix"`
-	case Transient:
-		return "transient error"
 	case Database:
 		return "database error"
 	case Validation:
@@ -205,6 +195,8 @@ func E(args ...interface{}) error {
 			e.Err = &copy
 		case error:
 			e.Err = arg
+		case Code:
+			e.Code = arg
 		default:
 			_, file, line, _ := runtime.Caller(1)
 			log.Error().Msgf("errors.E: bad call from %s:%d: %v", file, line, args)
