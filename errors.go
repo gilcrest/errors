@@ -204,8 +204,6 @@ func E(args ...interface{}) error {
 		}
 	}
 
-	log.Error().Err(e).Msg("")
-
 	// Populate stack information (only in debug mode).
 	e.populateStack()
 	prev, ok := e.Err.(*Error)
