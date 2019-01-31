@@ -207,6 +207,8 @@ func E(args ...interface{}) error {
 			e.Err = arg
 		case Code:
 			e.Code = arg
+		case Parameter:
+			e.Param = arg
 		default:
 			_, file, line, _ := runtime.Caller(1)
 			log.Error().Msgf("errors.E: bad call from %s:%d: %v", file, line, args)
