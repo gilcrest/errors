@@ -15,6 +15,7 @@ type hError interface {
 	error
 	Status() int
 	ErrKind() string
+	ErrParam() string
 	ErrCode() string
 }
 
@@ -22,6 +23,7 @@ type hError interface {
 type HTTPErr struct {
 	HTTPStatusCode int
 	Kind           Kind
+	Param          Parameter
 	Code           Code
 	Err            error
 }
@@ -41,6 +43,11 @@ func (hse HTTPErr) ErrKind() string {
 	return hse.Kind.String()
 }
 
+// ErrParam returns a string denoting the "kind" of error
+func (hse HTTPErr) ErrParam() string {
+	return string(hse.Param)
+}
+
 // ErrCode returns a string denoting the "kind" of error
 func (hse HTTPErr) ErrCode() string {
 	return string(hse.Code)
@@ -58,6 +65,7 @@ type errResponse struct {
 type svcError struct {
 	Kind    string `json:"kind,omitempty"`
 	Code    string `json:"code,omitempty"`
+	Param   string `json:"param,omitempty"`
 	Message string `json:"message,omitempty"`
 }
 
@@ -85,6 +93,7 @@ func HTTPError(w http.ResponseWriter, err error) {
 				Error: svcError{
 					Kind:    e.ErrKind(),
 					Code:    e.ErrCode(),
+					Param:   e.ErrParam(),
 					Message: e.Error(),
 				},
 			}
@@ -150,6 +159,8 @@ func RE(args ...interface{}) error {
 			e.Code = Code(arg)
 		case Code:
 			e.Code = arg
+		case Parameter:
+			e.Param = arg
 		case *Error:
 			// Make a copy
 			copy := *arg
