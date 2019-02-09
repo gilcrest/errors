@@ -163,17 +163,12 @@ func RE(args ...interface{}) error {
 		case Parameter:
 			e.Param = arg
 		case *Error:
-
-			// For API response errors, don't show full recursion details
-			// , just the error message
+			// For API response errors, don't show full recursion details,
+			// just the error message
 			errStr := arg.Error()
 			idx := strings.Index(errStr, "|:")
 			substring := errStr[idx+3:]
-			arg.Err = Str(substring)
-
-			// Make a copy
-			copy := *arg
-			e.Err = &copy
+			e.Err = Str(substring)
 		case error:
 			e.Err = arg
 		default:
