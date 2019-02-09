@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"runtime"
+	"strings"
 
 	"github.com/rs/zerolog/log"
 )
@@ -162,6 +163,14 @@ func RE(args ...interface{}) error {
 		case Parameter:
 			e.Param = arg
 		case *Error:
+
+			// For API response errors, don't show full recursion details
+			// , just the error message
+			errStr := arg.Error()
+			idx := strings.Index(errStr, "|:")
+			substring := errStr[idx+3:]
+			arg.Err = Str(substring)
+
 			// Make a copy
 			copy := *arg
 			e.Err = &copy
