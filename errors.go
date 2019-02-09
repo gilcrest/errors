@@ -106,33 +106,33 @@ const (
 func (k Kind) String() string {
 	switch k {
 	case Other:
-		return "other error"
+		return "other_error"
 	case Invalid:
-		return "invalid operation"
+		return "invalid_operation"
 	case Permission:
-		return "permission denied"
+		return "permission_denied"
 	case IO:
-		return "I/O error"
+		return "I/O_error"
 	case Exist:
-		return "item already exists"
+		return "item_already_exists"
 	case NotExist:
-		return "item does not exist"
+		return "item_does_not_exist"
 	case BrokenLink:
-		return "link target does not exist"
+		return "link_target_does_not_exist"
 	case Private:
-		return "information withheld"
+		return "information_withheld"
 	case Internal:
-		return "internal error"
+		return "internal_error"
 	case Database:
-		return "database error"
+		return "database_error"
 	case Validation:
-		return "input validation error"
+		return "input_validation_error"
 	case Unanticipated:
-		return "unanticipated error"
+		return "unanticipated_error"
 	case InvalidRequest:
 		return "invalid_request_error"
 	}
-	return "unknown error kind"
+	return "unknown_error_kind"
 }
 
 // E builds an error value from its arguments.
@@ -282,7 +282,7 @@ func (e *Error) Error() string {
 				b.WriteString(e.Err.Error())
 			}
 		} else {
-			pad(b, ": ")
+			pad(b, "|: ")
 			b.WriteString(e.Err.Error())
 		}
 	}
