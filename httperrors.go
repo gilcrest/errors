@@ -33,7 +33,7 @@ type HTTPErr struct {
 func (hse HTTPErr) Error() string {
 	// In case user forgets to add an error type to HTTPErr
 	if hse.Err == nil {
-		return "No Error Message set to HTTPErr.Err"
+		return ""
 	}
 	return hse.Err.Error()
 }
