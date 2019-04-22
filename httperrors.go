@@ -63,11 +63,14 @@ func (hse HTTPErr) Status() int {
 	return hse.HTTPStatusCode
 }
 
-type errResponse struct {
-	Error svcError `json:"error"`
+// ErrResponse is used as the Response Body
+type ErrResponse struct {
+	Error ServiceError `json:"error"`
 }
 
-type svcError struct {
+// ServiceError has fields for Service errors. All fields with no data will
+// be omitted
+type ServiceError struct {
 	Kind    string `json:"kind,omitempty"`
 	Code    string `json:"code,omitempty"`
 	Param   string `json:"param,omitempty"`
@@ -94,8 +97,8 @@ func HTTPError(w http.ResponseWriter, err error) {
 			// HTTP status code.
 			log.Printf("HTTP %d - %s", e.Status(), e)
 
-			er := errResponse{
-				Error: svcError{
+			er := ErrResponse{
+				Error: ServiceError{
 					Kind:    e.ErrKind(),
 					Code:    e.ErrCode(),
 					Param:   e.ErrParam(),
@@ -112,8 +115,8 @@ func HTTPError(w http.ResponseWriter, err error) {
 			// Any error types we don't specifically look out for default
 			// to serving a HTTP 500
 			cd := http.StatusInternalServerError
-			er := errResponse{
-				Error: svcError{
+			er := ErrResponse{
+				Error: ServiceError{
 					Kind:    Unanticipated.String(),
 					Code:    "Unanticipated",
 					Message: "Unexpected error - contact support",
