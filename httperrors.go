@@ -18,6 +18,7 @@ type hError interface {
 	ErrKind() string
 	ErrParam() string
 	ErrCode() string
+	StatusOnly() bool
 }
 
 // HTTPErr represents an error with an associated HTTP status code.
@@ -45,6 +46,9 @@ func (hse *HTTPErr) SetErr(s string) {
 
 // ErrKind returns a string denoting the "kind" of error
 func (hse HTTPErr) ErrKind() string {
+	if hse.Kind == 0 {
+		return ""
+	}
 	return hse.Kind.String()
 }
 
@@ -61,6 +65,12 @@ func (hse HTTPErr) ErrCode() string {
 // Status Returns an HTTP Status Code.
 func (hse HTTPErr) Status() int {
 	return hse.HTTPStatusCode
+}
+
+// StatusOnly determines if the only field populated is the HTTP Status Code
+// If so, the error response body should not be populated
+func (hse *HTTPErr) StatusOnly() bool {
+	return hse.HTTPStatusCode != 0 && hse.Kind == 0 && hse.Param == "" && hse.Code == "" && hse.Err == nil
 }
 
 // ErrResponse is used as the Response Body
@@ -97,19 +107,23 @@ func HTTPError(w http.ResponseWriter, err error) {
 			// HTTP status code.
 			log.Printf("HTTP %d - %s", e.Status(), e)
 
-			er := ErrResponse{
-				Error: ServiceError{
-					Kind:    e.ErrKind(),
-					Code:    e.ErrCode(),
-					Param:   e.ErrParam(),
-					Message: e.Error(),
-				},
+			if e.StatusOnly() {
+				sendError(w, "", e.Status())
+			} else {
+				er := ErrResponse{
+					Error: ServiceError{
+						Kind:    e.ErrKind(),
+						Code:    e.ErrCode(),
+						Param:   e.ErrParam(),
+						Message: e.Error(),
+					},
+				}
+
+				// Marshal errResponse struct to JSON for the response body
+				errJSON, _ := json.MarshalIndent(er, "", "    ")
+
+				sendError(w, string(errJSON), e.Status())
 			}
-
-			// Marshal errResponse struct to JSON for the response body
-			errJSON, _ := json.MarshalIndent(er, "", "    ")
-
-			sendError(w, string(errJSON), e.Status())
 
 		default:
 			// Any error types we don't specifically look out for default
@@ -142,7 +156,10 @@ func sendError(w http.ResponseWriter, error string, statusCode int) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 	w.WriteHeader(statusCode)
-	fmt.Fprintln(w, error)
+	// Only write response body if there is an error string populated
+	if error != "" {
+		fmt.Fprintln(w, error)
+	}
 }
 
 // RE builds an HTTP Response error value from its arguments.
