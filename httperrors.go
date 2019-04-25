@@ -105,8 +105,11 @@ func HTTPError(w http.ResponseWriter, err error) {
 		case hError:
 			// We can retrieve the status here and write out a specific
 			// HTTP status code.
-			log.Printf("HTTP %d - %s", e.Status(), e)
-
+			if e.StatusOnly() {
+				log.Error().Int("HTTP Error StatusCode", e.Status())
+			} else {
+				log.Error().Msgf("HTTP %d - %s", e.Status(), e)
+			}
 			if e.StatusOnly() {
 				sendError(w, "", e.Status())
 			} else {
