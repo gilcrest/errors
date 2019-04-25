@@ -192,10 +192,7 @@ func RE(args ...interface{}) error {
 		case *Error:
 			// For API response errors, don't show full recursion details,
 			// just the error message
-			errStr := arg.Error()
-			idx := strings.Index(errStr, "|:")
-			substring := errStr[idx+3:]
-			e.Err = Str(substring)
+			e.Err = StripStack(arg)
 		case error:
 			e.Err = arg
 		default:
@@ -205,5 +202,23 @@ func RE(args ...interface{}) error {
 		}
 	}
 
+	return e
+}
+
+// StripStack takes an Error type (Error defined in this module) and
+// removes the leading stack information
+func StripStack(e error) error {
+	err, ok := e.(*Error)
+	if ok {
+		// get error string
+		errStr := err.Error()
+		// get position where |: character lands in string
+		idx := strings.Index(errStr, "|:")
+		// substring from after the |: character
+		substring := errStr[idx+3:]
+		// put substring back into error
+		return Str(substring)
+	}
+	// If it's not an Error type, don't strip anything
 	return e
 }
