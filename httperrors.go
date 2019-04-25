@@ -106,7 +106,7 @@ func HTTPError(w http.ResponseWriter, err error) {
 			// We can retrieve the status here and write out a specific
 			// HTTP status code.
 			if e.StatusOnly() {
-				log.Error().Int("HTTP Error StatusCode", e.Status())
+				log.Error().Int("HTTP Error StatusCode", e.Status()).Msg("")
 			} else {
 				log.Error().Msgf("HTTP %d - %s", e.Status(), e)
 			}
